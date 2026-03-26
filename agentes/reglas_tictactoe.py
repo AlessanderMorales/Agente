@@ -6,14 +6,18 @@ JUGADOR_O = -1
 
 
 def revisar_ganador(tablero):
-    lineas = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],  
-        [0, 4, 8], [2, 4, 6]              
-    ]
+    N = int(math.sqrt(len(tablero)))
+    lineas = []
+    for i in range(N):
+        lineas.append([i * N + j for j in range(N)]) # Filas
+        lineas.append([j * N + i for j in range(N)]) # Columnas
+    lineas.append([i * N + i for i in range(N)])     # Diagonal principal
+    lineas.append([i * N + (N - 1 - i) for i in range(N)]) # Diagonal secundaria
+
     for linea in lineas:
-        if tablero[linea[0]] != 0 and tablero[linea[0]] == tablero[linea[1]] == tablero[linea[2]]:
-            return tablero[linea[0]]
+        primer_elemento = tablero[linea[0]]
+        if primer_elemento != 0 and all(tablero[i] == primer_elemento for i in linea):
+            return primer_elemento
     return 0
 
 def juego_terminado(tablero):
@@ -26,10 +30,13 @@ def movimientos_posibles(tablero):
     if juego_terminado(tablero):
         return []
         
-    turno = JUGADOR_X if tablero.count(0) % 2 != 0 else JUGADOR_O
-    hijos = []
+    total = len(tablero)
+    ceros = tablero.count(0)
+    movimientos_hechos = total - ceros
+    turno = JUGADOR_X if movimientos_hechos % 2 == 0 else JUGADOR_O
     
-    for i in range(9):
+    hijos = []
+    for i in range(total):
         if tablero[i] == 0:
             nuevo_estado = list(tablero)
             nuevo_estado[i] = turno
@@ -40,30 +47,29 @@ def movimientos_posibles(tablero):
 def evaluar_tablero(tablero):
     ganador = revisar_ganador(tablero)
     if ganador == JUGADOR_X:
-        return 1000  # Ganada
+        return 100000  # Ganada
     if ganador == JUGADOR_O:
-        return -1000
+        return -100000
     
-    # Heurística para "posibles ganadas"
     valor = 0
-    lineas = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],  
-        [0, 4, 8], [2, 4, 6]              
-    ]
+    N = int(math.sqrt(len(tablero)))
+    lineas = []
+    for i in range(N):
+        lineas.append([i * N + j for j in range(N)])
+        lineas.append([j * N + i for j in range(N)])
+    lineas.append([i * N + i for i in range(N)])
+    lineas.append([i * N + (N - 1 - i) for i in range(N)])
+
     for linea in lineas:
-        fichas = [tablero[linea[0]], tablero[linea[1]], tablero[linea[2]]]
+        fichas = [tablero[i] for i in linea]
+        count_x = fichas.count(JUGADOR_X)
+        count_o = fichas.count(JUGADOR_O)
         
-        # Posibles ganadas para JUGADOR_X (valor alto)
-        if fichas.count(JUGADOR_X) == 2 and fichas.count(0) == 1:
-            valor += 10
-        elif fichas.count(JUGADOR_X) == 1 and fichas.count(0) == 2:
-            valor += 1
-            
-        # Posibles ganadas para JUGADOR_O (valor alto negativo)
-        if fichas.count(JUGADOR_O) == 2 and fichas.count(0) == 1:
-            valor -= 10
-        elif fichas.count(JUGADOR_O) == 1 and fichas.count(0) == 2:
-            valor -= 1
+        # Si la línea tiene X y no tiene O
+        if count_x > 0 and count_o == 0:
+            valor += 10 ** (count_x - 1)
+        # Si la línea tiene O y no tiene X
+        elif count_o > 0 and count_x == 0:
+            valor -= 10 ** (count_o - 1)
             
     return valor
