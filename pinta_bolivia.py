@@ -1,6 +1,7 @@
 import random
-from Agente import Agente
-from Busqueda_local import BusquedaLocal
+from agentes.Agente import Agente
+from agentes.hill_climbing import hill_climbing
+from agentes.simulated_annealing import simulated_annealing
 
 class ProblemaColoreoBolivia:
    
@@ -64,12 +65,12 @@ def main():
     problema = ProblemaColoreoBolivia()
     
     print("--- 1. Búsqueda con Hill Climbing ---")
-    agente_hc = Agente(problema, BusquedaLocal.hill_climbing)
+    agente_hc = Agente(problema, hill_climbing)
     agente_hc.resolver()
     print("\n" + "="*50 + "\n")
     
     print("--- 2. Búsqueda con Simulated Annealing ---")
-    agente_sa = Agente(problema, BusquedaLocal.simulated_annealing)
+    agente_sa = Agente(problema, simulated_annealing)
     agente_sa.resolver()
 
 if __name__ == "__main__":

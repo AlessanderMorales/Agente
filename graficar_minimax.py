@@ -14,17 +14,18 @@ instalar_dependencias()
 
 import networkx as nx
 import matplotlib.pyplot as plt
-from AgentesConAdversario import sucesores, es_terminal, utilidad, MiniMax, MAX, MIN
+from agentes.reglas_tictactoe import movimientos_posibles, juego_terminado, puntaje_final, JUGADOR_X, JUGADOR_O
+from agentes.minimax import minimax
 
-def turno_actual(estado):
-    return MAX if estado.count(0) % 2 != 0 else MIN
+def turno_actual(tablero):
+    return JUGADOR_X if tablero.count(0) % 2 != 0 else JUGADOR_O
 
 
-def estado_a_string(estado, valor_minimax=None):
+def estado_a_string(tablero, valor_minimax=None):
     simbolos = {0: ' ', 1: 'X', -1: 'O'}
-    fila1 = f"{simbolos[estado[0]]}|{simbolos[estado[1]]}|{simbolos[estado[2]]}"
-    fila2 = f"{simbolos[estado[3]]}|{simbolos[estado[4]]}|{simbolos[estado[5]]}"
-    fila3 = f"{simbolos[estado[6]]}|{simbolos[estado[7]]}|{simbolos[estado[8]]}"
+    fila1 = f"{simbolos[tablero[0]]}|{simbolos[tablero[1]]}|{simbolos[tablero[2]]}"
+    fila2 = f"{simbolos[tablero[3]]}|{simbolos[tablero[4]]}|{simbolos[tablero[5]]}"
+    fila3 = f"{simbolos[tablero[6]]}|{simbolos[tablero[7]]}|{simbolos[tablero[8]]}"
     tablero = f"{fila1}\n-----\n{fila2}\n-----\n{fila3}"
     if valor_minimax is not None:
         return f"{tablero}\nV={valor_minimax}"
@@ -34,7 +35,7 @@ def construir_arbol(estado_inicial):
     G = nx.DiGraph()
     visitados = set()
     cola = [estado_inicial]
-    valor_inicial = MiniMax(estado_inicial, turno_actual(estado_inicial))
+    valor_inicial = minimax(estado_inicial, turno_actual(estado_inicial))
     G.add_node(estado_inicial, label=estado_a_string(estado_inicial, valor_inicial), valor=valor_inicial)
     
     while cola:
@@ -44,10 +45,10 @@ def construir_arbol(estado_inicial):
             continue
         visitados.add(estado_actual)
 
-        if not es_terminal(estado_actual):
-            for hijo in sucesores(estado_actual):
+        if not juego_terminado(estado_actual):
+            for hijo in movimientos_posibles(estado_actual):
                 if hijo not in G:
-                    valor_hijo = MiniMax(hijo, turno_actual(hijo))
+                    valor_hijo = minimax(hijo, turno_actual(hijo))
                     G.add_node(hijo, label=estado_a_string(hijo, valor_hijo), valor=valor_hijo)
                 G.add_edge(estado_actual, hijo)
                 cola.append(hijo)
@@ -68,17 +69,17 @@ def mostrar_grafo(G):
     color_map = []
     for node in G:
         valor = G.nodes[node].get('valor')
-        if es_terminal(node):
-            if utilidad(node) == 1:
+        if juego_terminado(node):
+            if puntaje_final(node) == 1:
                 color_map.append('lightgreen') # Gana X
-            elif utilidad(node) == -1:
+            elif puntaje_final(node) == -1:
                 color_map.append('lightcoral') # Gana O
             else:
                 color_map.append('lightgrey')   # Empate
         elif valor == 1:
-            color_map.append('deepskyblue')   # buena para MAX
+            color_map.append('deepskyblue')   # buena para JUGADOR_X
         elif valor == -1:
-            color_map.append('orange')       # buena para MIN
+            color_map.append('orange')       # buena para JUGADOR_O
         else:
             color_map.append('lightblue')
             
@@ -94,7 +95,7 @@ def mostrar_grafo(G):
     plt.show()
 
 if __name__ == "__main__":
-    # Escogemos un estado inicial casi terminado para que el grafo no sea gigantesco
+    # Escogemos un tablero inicial casi terminado para que el grafo no sea gigantesco
     # X empieza, X e O han jugado varias veces.
     # Tablero inicial de prueba:
     # X | O | X

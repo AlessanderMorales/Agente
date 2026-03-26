@@ -1,6 +1,7 @@
-from Agente import Agente
+from agentes.Agente import Agente
 from n_reinas import ProblemaNReinas
-from Busqueda_local import BusquedaLocal
+from agentes.hill_climbing import hill_climbing
+from agentes.simulated_annealing import simulated_annealing
 
 def main():
     N = 8
@@ -9,13 +10,13 @@ def main():
     
     # Pruebas con Hill Climbing
     print("--- 1. Búsqueda con Hill Climbing (Ascenso de Colinas) ---")
-    agente_hc = Agente(problema, BusquedaLocal.hill_climbing)
+    agente_hc = Agente(problema, hill_climbing)
     solucion_hc = agente_hc.resolver()
     print("\n" + "="*50 + "\n")
     
     # Pruebas con Simulated Annealing
     print("--- 2. Búsqueda con Simulated Annealing (Recocido Simulado) ---")
-    agente_sa = Agente(problema, BusquedaLocal.simulated_annealing)
+    agente_sa = Agente(problema, simulated_annealing)
     # Ejecutamos el agente (usando schedule de temperatura por defecto)
     solucion_sa = agente_sa.resolver()
 
